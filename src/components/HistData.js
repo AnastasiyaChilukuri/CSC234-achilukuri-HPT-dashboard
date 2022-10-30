@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Login from "./Login";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
@@ -13,9 +13,12 @@ import {
     Container,
     Backdrop,
     Box,
-    CircularProgress
+    CircularProgress,
+    Typography
   } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { UserContext } from "./UserContext";
+
 
 import { createVendiaClient } from "@vendia/client";
 
@@ -26,21 +29,28 @@ const client = createVendiaClient({
 });
 
 const HistData = () => {
+
+  const [token, setToken] = useState();
+
   const [user, setUser] = useState({ name: "", email: "" });
   const [error, setError] = useState("");
   const [toolPicturesLoaded, setToolPicturesLoaded] = useState(false);
   const [toolPictures, setToolPictures] = useState([]);
   const [openToolHistPopUp, setOpenToolHistPopUp] = useState(false);
   const [toolHistPopUpTitle, setToolHistPopUpTitle] = useState("");
+  const {userToken, setUserToken} = useContext(UserContext);
+
+  if(userToken.status == false) {
+    return ( 
+    <div>
+      <Login textMsg="see historical data"/>
+    </div>)
+
+  }
 
   const handleCloseToolHistPopUp= () => {
     setOpenToolHistPopUp(false);
   };
-
-  /*const handleOpenToolHistPopUp= () => {
-    setToolHistPopUpTitle();
-    setOpenToolHistPopUp(true);
-  };*/
 
   const getAllToolPictures = async () => {
     var _toolPictures = [];

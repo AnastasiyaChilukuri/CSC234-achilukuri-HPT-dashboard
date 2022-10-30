@@ -211,7 +211,7 @@ export default function SearchByID() {
         },
       },
     });
-
+    console.log(toolTableResp);
     if(toolTableResp.items.length > 0){
       const motorSN = toolTableResp.items[0].motorSN;
       const baterySN = toolTableResp.items[0].batterySN;
