@@ -92,7 +92,7 @@ export default function SearchByID() {
     const _toolCo2Data = await getCo2DataOfToolBySerialNo(serialNo);
     if(_toolCo2Data.sucess){
       setToolCo2Values(_toolCo2Data);
-      setToolType(toolType);
+      setToolType(_toolCo2Data.type);
     }
 
     setOpenToolPopUp(true);
@@ -143,7 +143,7 @@ export default function SearchByID() {
           aria-describedby="dialog-description"
           PaperProps={{ sx: { backgroundColor: "default" } }}
         >
-          <DialogTitle id="dialog-title" align="center">
+          <DialogTitle id="dialog-title" align="center" sx={{ color: "white", backgroundColor: "rgba(25,118,210,1.0)", padding:1}}>
             <Box display="flex" alignItems="center">
               <Box flexGrow={1}>
               <ListItemText
@@ -160,13 +160,14 @@ export default function SearchByID() {
                     fontSize: 15,
                     variant: 'button',
                     lineHeight: '25px',
+                    color : "white"
                   }}
-                  sx={{ my: 0 }}
+                  sx={{ color: "white"}}
                 />
               </Box>
               <Box>
                 <IconButton onClick={handleCloseToolPopUp}>
-                  <CloseIcon />
+                  <CloseIcon sx={{ color: "white"}}/>
                 </IconButton>
               </Box>
             </Box>

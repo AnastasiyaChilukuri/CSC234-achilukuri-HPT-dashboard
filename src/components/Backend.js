@@ -7,6 +7,16 @@ const client = createVendiaClient({
     apiKey: "3426nYaSeCpMrUdhdgLqJLPbqJFrq6Vp2ANZnTxx9zJP",
 });
 
+const toolTitleMap = {
+    "hammerDrill" : "Hammer Drill",
+    "angleDrill" : "Angle Drill",
+    "rotaryDrill" : "Rotary Drill",
+    "compactDrill" : "Compact Drill",
+    "mixerDrill" : "Mixer Drill",
+    "percussionDrill" : "Precussion Drill",
+    "hammerDrillBulldog" : "HammerDrill Bulldog"
+};
+
 var toolTableData ={};
 var motorTableData ={};
 var batteryTableData={};
@@ -59,6 +69,21 @@ const loadDataFromVendia = async() => {
     {
         landRouteTableData[landRouteTableResp.items[i].routeID] = landRouteTableResp.items[i];
     }
+}
+
+const tables = [
+  toolTableData,
+  motorTableData,
+  batteryTableData,
+  seaShipmentTableData,
+  landShipmentTableData,
+  seaRouteTableData,
+  landRouteTableData
+];
+
+export const getDataFromVendia = async (tableIndex) => {
+  await loadDataFromVendia();
+  return tables[tableIndex];
 }
 
 const getCo2DataOfShippmentByID = (_shipmentID, shipmentType) => {
@@ -131,7 +156,8 @@ const getCo2DataOfTool = async (_toolEnityRecord, isImageNeeded) => {
         imageUrl : "",
         motor: 0,
         batery: 0,
-        transportation: 0};
+        transportation: 0,
+        type: ""};
     const motorSN = _toolEnityRecord.motorSN;
     const baterySN = _toolEnityRecord.batterySN;
     const toolType = _toolEnityRecord.toolType;
@@ -146,6 +172,7 @@ const getCo2DataOfTool = async (_toolEnityRecord, isImageNeeded) => {
     _toolCo2Data.batery = batteryCo2Return.bateryCo2;
     _toolCo2Data.transportation = (parseFloat(motorCo2Return.transportationCo2) + parseFloat(batteryCo2Return.transportationCo2)).toFixed(3);
     _toolCo2Data.transportation = parseFloat(_toolCo2Data.transportation);
+    _toolCo2Data.type = toolTitleMap[toolType];
     return _toolCo2Data;
 }
 
@@ -193,6 +220,7 @@ export const getAllToolPictures = async () => {
     const { entities, storage } = client;
     const toolTypes = await entities.toolTypePic.list();
     for (let i = 0; i < toolTypes.items.length; i++) {
+      console.log(toolTypes.items[i].toolType);
       var item = toolTypes.items[i];
       const fileListResp = await storage.files.list({
         filter: {
@@ -205,7 +233,7 @@ export const getAllToolPictures = async () => {
       if (fileListResp.items.length > 0) {
         var _toolPicturesItem = {};
         _toolPicturesItem.img = fileListResp.items[0].temporaryUrl;
-        _toolPicturesItem.title = item.toolType.toUpperCase();
+        _toolPicturesItem.title = toolTitleMap[item.toolType];
         _toolPicturesItem.type = item.toolType;
         _toolPictures.push(_toolPicturesItem);
       }
