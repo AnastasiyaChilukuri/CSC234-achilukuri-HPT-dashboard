@@ -44,6 +44,8 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { padding } from "@mui/system";
+import { UserContext } from "./UserContext";
+
 
 ChartJS.register(
   CategoryScale,
@@ -78,13 +80,12 @@ const HistData = () => {
   const [graphData, setGraphData] = useState({});
   const [graphLoaded, setGraphLoaded] = useState(false);
   const [yearlyDataFromVendia, setYearlyDataFromVendia] = useState({});  if(userToken.status == false) {
-    return ( 
+    return (
     <div>
       <Login textMsg="see historical data"/>
     </div>)
 
   }
-  
 
 
   const handleCloseToolHistPopUp = () => {

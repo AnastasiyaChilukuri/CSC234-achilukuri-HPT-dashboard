@@ -8,14 +8,13 @@ import SearchByID from './SearchByID';
 import HistData from './HistData';
 import Login from './Login';
 import AddNewTool from "./AddNewTool";
+import ViewAndEditData from "./ViewAndEditData"
 import {UserContext} from './UserContext';
 
 export const MuiTabs = () => {
     const [value, setValue] = useState('1')
 
-    
-    
-    const handleChange = (event: React.SyntheticEvent, newValue:string) => {
+    const handleChange = (event, newValue) => {
         setValue(newValue)
     }
   return (
@@ -31,6 +30,7 @@ export const MuiTabs = () => {
                     <Tab label='Search by Serial Number' value='1'></Tab>
                     <Tab label='Historical Data' value='2'></Tab>
                     <Tab label='Add New Tool' value='3' ></Tab>
+                    <Tab label='View/Edit Data' value='4' ></Tab>
 
                 </TabList>
 
@@ -38,6 +38,8 @@ export const MuiTabs = () => {
             <TabPanel value='1' ><SearchByID/></TabPanel>
             <TabPanel value='2' ><HistData/></TabPanel>
             <TabPanel value='3' ><AddNewTool/></TabPanel>
+            <TabPanel value='4' ><ViewAndEditData/></TabPanel>
+
         </TabContext>
         </Box>
     </div>

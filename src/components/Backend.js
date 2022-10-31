@@ -81,6 +81,34 @@ const tables = [
   landRouteTableData
 ];
 
+export const addTool = async (_toolData) =>{
+  const { entities } = client;
+  await loadDataFromVendia();
+  var errorMsg = [];
+  if(_toolData.serialNumber in toolTableData){
+    errorMsg.push("Provided Tool Serial number is being used by an existing tool!");
+  }
+  var batteries_in_use = [];
+  var motors_in_use = [];
+  for(var sno in toolTableData)
+  {
+    batteries_in_use.push(toolTableData[sno].batterySN);
+    motors_in_use.push(toolTableData[sno].motorSN);
+  }
+  if(batteries_in_use.includes(_toolData.batterySN)){
+    errorMsg.push("Battery Serial number is being used by an existing tool!");
+  }
+  if(motors_in_use.includes(_toolData.motorSN)){
+    errorMsg.push("Motor Serial number is being used by an existing tool!");
+  }
+  if(errorMsg.length == 0){
+    await entities.tool.add(_toolData);
+    return {sucess: true, error:["Tool Added!"]};
+  }
+  return {sucess:false, error:errorMsg};
+
+}
+
 export const getDataFromVendia = async (tableIndex) => {
   await loadDataFromVendia();
   return tables[tableIndex];
