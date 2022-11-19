@@ -78,7 +78,7 @@ export default function Appbar() {
                 <ListItem>
                   <ListItemText primary={`Role: ${userToken.role}`}/>
                 </ListItem>
-            </List>          
+            </List>
           <MenuItem onClick={() => handleLogoutClick()}>Logout</MenuItem>
         </Menu>
       </div>
@@ -87,7 +87,7 @@ export default function Appbar() {
 
 
   return (
-    <Box sx={{ flexGrow: 1, borderColor: 'grey.500'}} width='800px' margin='auto' >
+    <Box sx={{ flexGrow: 1, borderColor: 'grey.500'}} width='auto' margin='auto' >
       <UserContext.Provider value={{userToken, setUserToken}}>
       <AppBar position="static" color='primary'>
       <Toolbar>

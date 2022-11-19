@@ -64,7 +64,8 @@ export default function SearchByID() {
   });
   const [serialNum, setSerialNum] = useState("");
   const [toolType, setToolType] = useState("");
-  const [pritnOnce, setPrintOnce] = useState(false);
+  const [serialnumError, setSerialnumError] = useState("");
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -80,8 +81,12 @@ export default function SearchByID() {
 
   function handleClickOpen(props) {
     //here you need to determine to open wrong dialogue or the correct dialouge
+    if(serialNum===""){
+      setSerialnumError("Serial number is required!");
+      return;
+    }
     setLoadingOpen(true);
-    co2DataOfToolBySerialNo(serialNum);
+    co2DataOfToolBySerialNo(serialNum.trim());
   }
 
   const handleCloseToolPopUp= () => {
@@ -104,6 +109,7 @@ export default function SearchByID() {
     return (
       <div>
         <Dialog
+          id="wrongSerialNumber"
           open={openToolPopUp && !toolSerialFound}
           onClose={handleCloseToolPopUp}
           aria-label="dialog-title"
@@ -137,6 +143,7 @@ export default function SearchByID() {
     return (
       <div>
         <Dialog
+          id="toolPopUp"
           open={openToolPopUp && toolSerialFound}
           onClose={handleCloseToolPopUp}
           aria-label="dialog-title"
@@ -174,7 +181,7 @@ export default function SearchByID() {
           </DialogTitle>
           <DialogContent align="center">
             <Box sx={{ width: 1, height: 1 }} p={2} textAlign="center">
-              <img src={toolCo2Values.imageUrl} width="60%" alt="bag photos" />
+              <img id="toolPopUpImg" src={toolCo2Values.imageUrl} width="60%" alt="Tool photo" />
               <Box>
                 <Box
                   display="grid"
@@ -244,14 +251,19 @@ export default function SearchByID() {
               margin="normal"
               required
               fullWidth
-              id="text"
+              id="toolSerialNumInputTextField"
               label="Tool Serial Number"
               name="text"
               autoFocus
               onChange={handleSerialNumChange}
+              error= {(serialnumError!=="")}
+              helperText={(serialnumError==="")?"":serialnumError}
+              disabled={loadingOpen}
+
             />
             <Button
               onClick={() => handleClickOpen()}
+              id="toolSerialNumInputSubmitButton"
               type="submit"
               fullWidth
               variant="contained"

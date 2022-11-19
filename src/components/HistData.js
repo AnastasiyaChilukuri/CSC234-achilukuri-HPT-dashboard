@@ -79,7 +79,8 @@ const HistData = () => {
   const [graphOptions, setGraphOptions] = useState({});
   const [graphData, setGraphData] = useState({});
   const [graphLoaded, setGraphLoaded] = useState(false);
-  const [yearlyDataFromVendia, setYearlyDataFromVendia] = useState({});  if(userToken.status == false) {
+  const [yearlyDataFromVendia, setYearlyDataFromVendia] = useState({});  
+  if(userToken.status == false) {
     return (
     <div>
       <Login textMsg="see historical data"/>

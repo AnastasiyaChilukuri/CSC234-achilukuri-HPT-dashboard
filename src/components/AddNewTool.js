@@ -194,7 +194,7 @@ const AddNewTool = () => {
           sx={{ flexGrow: 1 }}
           align="center"
         >
-          {userToken.email} user does not have enough permissions to add a new
+          {userToken.email} does not have enough permissions to add a new
           tool
         </Typography>
       </div>
@@ -237,7 +237,7 @@ const AddNewTool = () => {
                     variant="outlined"
                     onChange={(e) => {
                       setToolSerialError("");
-                      setToolSerial(e.target.value);}}
+                      setToolSerial(e.target.value.trim());}}
                     error= {(toolSerialError!=="")}
                     helperText={(toolSerialError==="")?"":toolSerialError}
                     disabled={inProcess}
@@ -282,7 +282,7 @@ const AddNewTool = () => {
                     variant="outlined"
                     onChange={(e) => {
                       setMotorSerialError("");
-                      setMotorSerial(e.target.value);}}
+                      setMotorSerial(e.target.value.trim());}}
                     error= {(motorSerialError!=="")}
                     helperText={(motorSerialError==="")?"":motorSerialError}
                     disabled={inProcess}
@@ -297,7 +297,7 @@ const AddNewTool = () => {
                     variant="outlined"
                     onChange={(e) => {
                       setBatterySerialError("");
-                      setBatterySerial(e.target.value);}}
+                      setBatterySerial(e.target.value.trim());}}
                     error= {(batterySerialError!=="")}
                     helperText={(batterySerialError==="")?"":batterySerialError}
                     disabled={inProcess}
