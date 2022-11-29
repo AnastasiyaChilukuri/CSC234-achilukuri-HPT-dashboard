@@ -44,7 +44,7 @@ export default function Appbar() {
 
   function showLogout () {
     return (
-      <div>
+      <div id='accountMenu'>
         <IconButton
           size="large"
           aria-label="account of current user"
@@ -79,7 +79,7 @@ export default function Appbar() {
                   <ListItemText primary={`Role: ${userToken.role}`}/>
                 </ListItem>
             </List>
-          <MenuItem onClick={() => handleLogoutClick()}>Logout</MenuItem>
+          <MenuItem id='logoutButton' onClick={() => handleLogoutClick()}>Logout</MenuItem>
         </Menu>
       </div>
     )

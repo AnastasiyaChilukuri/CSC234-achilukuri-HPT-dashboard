@@ -1,15 +1,13 @@
 import React, { useContext, useState } from "react";
 import Login from "./Login";
-import ImageList from "@mui/material/ImageList";
-import ImageListItem from "@mui/material/ImageListItem";
-import ImageListItemBar from "@mui/material/ImageListItemBar";
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
 import {
   Container,
   Grid,
   Paper,
   TextField,
   Button,
-  InputAdornment,
   IconButton,
   Typography,
   Dialog,
@@ -82,6 +80,7 @@ const AddNewTool = () => {
     return (
       <div>
         <Dialog
+          id='sucessDialog'
           open={openAddToolResultPopUpSucess}
           onClose={()=>setOpenAddToolResultPopUpSucess(false)}
           aria-label="dialog-title"
@@ -109,6 +108,7 @@ const AddNewTool = () => {
         </Dialog>
 
         <Dialog
+          id='failureDialog'
           open={openAddToolResultPopUpFail}
           onClose={()=>setOpenAddToolResultPopUpFail(false)}
           aria-label="dialog-title"
@@ -189,6 +189,7 @@ const AddNewTool = () => {
     return (
       <div>
         <Typography
+          id='notEnoughPermissions'
           variant="h6"
           component="div"
           sx={{ flexGrow: 1 }}
@@ -215,22 +216,31 @@ const AddNewTool = () => {
               <CircularProgress color="inherit" />
         </Backdrop>
         <Container maxWidth="sm">
+          
           <Grid
+            id='addNewToolForm'
             container
             spacing={2}
             direction="column"
             justifyContent="center"
             style={{ minHeight: "100hv" }}
           >
+            <AppBar position="static" color='primary'>
+                  <Toolbar>
+                      <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} align='center'>
+                      Add a new Tool
+                      </Typography>
+                    </Toolbar>
+                  </AppBar>   
             <Paper elevation={2} sx={{ padding: 5 }}>
+              
               <Grid container direction="column" spacing={2}>
                 <Grid item>
-                  <Typography component="h1" variant="h5">
-                    Add a new Tool
-                  </Typography>
+                              
                 </Grid>
                 <Grid item>
                   <TextField
+                    id='addNewToolForm_ToolSerialNo'
                     fullWidth
                     label="Tool Serial Number"
                     placeholder="Enter the tool serial number"
@@ -244,11 +254,11 @@ const AddNewTool = () => {
                   ></TextField>
                 </Grid>
                 <Grid item>
-                <InputLabel id="demo-simple-select-filled-label">Tool Type</InputLabel>
+                <InputLabel id="addNewToolForm_ToolType">Tool Type</InputLabel>
                 <Select
+                  id='addNewToolForm_ToolTypeSelect'
                   fullWidth
-                  labelId="demo-simple-select-filled-label"
-                  id="demo-simple-select-filled"
+                  labelId="addNewToolForm_ToolTypeSelect"
                   value={toolType}
                   onChange={(e) => {
                     setToolTypeError("");
@@ -261,7 +271,7 @@ const AddNewTool = () => {
                     ))}
                   </Select>
                 </Grid>
-                <Grid item>
+                <Grid item id='addNewToolForm_ToolReleaseDate'>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DesktopDatePicker
                       fullWidth
@@ -276,6 +286,7 @@ const AddNewTool = () => {
                 </Grid>
                 <Grid item>
                   <TextField
+                    id='addNewToolForm_MotorSerialNo'
                     fullWidth
                     label="Motor Serial Number"
                     placeholder="Enter the motor serial number"
@@ -291,6 +302,7 @@ const AddNewTool = () => {
                 </Grid>
                 <Grid item>
                   <TextField
+                    id='addNewToolForm_BatterySerialNo'
                     fullWidth
                     label="Battery Serial Number"
                     placeholder="Enter the battery serial number"
@@ -306,12 +318,12 @@ const AddNewTool = () => {
                 </Grid>
                 <Grid item>
                   <Button
+                    id='addNewToolForm_button'
                     variant="contained"
                     fullWidth
                     type="submit"
                     onClick={handleAddTool}
                     disabled={inProcess}
-
                   >
                     Add Tool
                   </Button>

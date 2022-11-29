@@ -22,7 +22,7 @@ export const MuiTabs = () => {
         <Box>
         <TabContext value={value}>
             <Box sx={{borderBottom: 1, borderColor:'divider'}}>
-                <TabList aria-label='Tabs example' 
+                <TabList id='mainMenu' aria-label='Tabs example' 
                 onChange={handleChange} 
                 textColor='primary' 
                 indicatorColor='primary'

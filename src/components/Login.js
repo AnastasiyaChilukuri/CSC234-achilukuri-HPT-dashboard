@@ -38,6 +38,7 @@ export default function Login(props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [openToolPopUp, setOpenToolPopUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [inLoginProcess, setInLoginProcess] = useState(false);
   const [userNameError, setUserNameError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
@@ -86,10 +87,7 @@ export default function Login(props) {
   };
 
   const handlePassVisibility = () => {
-    setPassword({
-      ...password,
-      showPassword: !password.showPassword,
-    });
+    setShowPassword(!showPassword);
   };
 
   const { userToken, setUserToken } = useContext(UserContext);
@@ -134,6 +132,7 @@ export default function Login(props) {
           aria-label="dialog-title"
           aria-describedby="dialog-description"
           fullWidth
+          id='wrongCredDialog'
           PaperProps={{
             sx: { backgroundColor: "pink", width: "60%", height: "20%" },
           }}
@@ -159,7 +158,7 @@ export default function Login(props) {
   }
 
   return (
-    <div>
+    <div id='loginPage'>
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={inLoginProcess}
@@ -186,6 +185,7 @@ export default function Login(props) {
                 <TextField
                   type="email"
                   fullWidth
+                  id='loginPageUserNameField'
                   label="Enter your e-mail"
                   placeholder="yourname@hpt.com"
                   variant="outlined"
@@ -197,8 +197,9 @@ export default function Login(props) {
               </Grid>
               <Grid item>
                 <TextField
-                  type={password.showPassword ? "text" : "password"}
+                  type={showPassword ? "text" : "password"}
                   fullWidth
+                  id='loginPagePasswordField'
                   label="Enter your password"
                   placeholder="Password"
                   variant="outlined"
@@ -209,11 +210,12 @@ export default function Login(props) {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
+                          id='hideShowPassword'
                           onClick={handlePassVisibility}
                           aria-label="toggle password"
                           edge="end"
                         >
-                          {password.showPassword ? (
+                          {showPassword ? (
                             <VisibilityOffIcon />
                           ) : (
                             <VisibilityIcon />
@@ -229,6 +231,7 @@ export default function Login(props) {
                 <Button
                   variant="contained"
                   fullWidth
+                  id='loginPageSignInButton'
                   type="submit"
                   onClick={handleOnClickLogin}
                   disabled = {inLoginProcess}

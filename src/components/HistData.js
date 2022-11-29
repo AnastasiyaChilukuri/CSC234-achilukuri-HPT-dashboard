@@ -160,6 +160,7 @@ const HistData = () => {
 
   const getAllToolPicturesFromBacked = async () => {
     const _toolPictures = await getAllToolPictures();
+    console.log(_toolPictures);
     setToolPictures(_toolPictures);
     setToolPicturesLoaded(true);
   };
@@ -167,7 +168,7 @@ const HistData = () => {
   function tableWithYearlyAvg(){
     return(
       <TableContainer component={Paper}>
-      <Table aria-label="simple table">
+      <Table id='dialogPopupWithHistGraphAndTable_Table' aria-label="simple table">
     <TableHead>
       <TableRow>
         <TableCell sx={{ color: "white", backgroundColor: "rgba(25,118,210,1.0)", padding:1}} >Release Year</TableCell>
@@ -200,11 +201,13 @@ const HistData = () => {
             PaperProps={{ sx: { backgroundColor: "default" } }}
             fullWidth
             maxWidth="lg"
+            id='dialogPopupWithHistGraphAndTable'
           >
             <DialogTitle id="dialog-title" align="center" sx={{ color: "white", backgroundColor: "rgba(25,118,210,1.0)", padding:1}}>
               <Box display="flex" alignItems="center">
                 <Box flexGrow={1}>
                 <ListItemText
+                  id='dialogPopupWithHistGraphAndTableHeader'
                   primary={`Historical data for ${toolHistPopUpTitle}`}
                   primaryTypographyProps={{
                     fontSize: 30,
@@ -226,6 +229,7 @@ const HistData = () => {
               <Grid container spacing={2} padding={2}>
                 <Grid item xs={12} align="center" justifyContent="center" >
                 <img
+                      id='dialogPopupWithHistGraphAndTableImage'
                       src={`${toolHistPopUpImgUrl}&w=25&fit=crop&auto=format`}
                       srcSet={`${toolHistPopUpImgUrl}&w=25&fit=crop&auto=format&dpr=2 3x`}
                       alt={toolHistPopUpTitle}
@@ -234,7 +238,7 @@ const HistData = () => {
                 </Grid>
                 <Grid item xs={8}>
                   {graphLoaded && (
-                  <Line options={graphOptions} data={graphData} />
+                  <Line id='dialogPopupWithHistGraphAndTable_Graph' options={graphOptions} data={graphData} />
                 )}
                 </Grid>
                 <Grid item xs={4}>
@@ -263,6 +267,7 @@ const HistData = () => {
               <CircularProgress color="inherit" />
             </Backdrop>
             <ImageList
+              id='toolPicGrid' 
               gap={12}
               sx={{
                 mb: 8,
@@ -272,13 +277,17 @@ const HistData = () => {
             >
               {toolPictures.map((tool) => (
                 <Card key={tool.title}>
-                  <ImageListItem sx={{ height: "100% !important" }}>
+                  <ImageListItem
+                   sx={{ height: "100% !important" }}
+                   id={tool.type+"GridItem"}
+                  >
                     <ImageListItemBar
                       sx={{
                         background:
                           "linear-gradient(to bottom, rgba(25,118,210,1.0)0%, rgba(25,118,210,0.3)70%, rgba(0,0,0,0)100%)",
                       }}
                       title={tool.title}
+                      id={tool.type+"GridItemHeader"}
                       position="top"
                     />
                     <img
@@ -287,6 +296,7 @@ const HistData = () => {
                       alt={tool.title}
                       loading="lazy"
                       style={{ cursor: "pointer" }}
+                      id={tool.type+"GridItemImage"}
                       onClick={() => {
                         setToolHistPopUpTitle(tool.title);
                         setToolHistPopUpImgUrl(tool.img);

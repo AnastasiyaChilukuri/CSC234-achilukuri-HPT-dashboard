@@ -135,7 +135,7 @@ export default function ViewAndEditData() {
       handleChange(null, 0);
     }
     return (
-      <div>
+      <div id='vendiaTable'>
         <TableContainer component={Paper}>
         {tableLoaded && <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
@@ -191,6 +191,7 @@ export default function ViewAndEditData() {
   return (
     <div>
       <Tabs
+        id='tableMenuBar'
         centered
         value={value}
         onChange={handleChange}
