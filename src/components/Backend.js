@@ -29,49 +29,66 @@ const loadDataFromVendia = async() => {
     const { entities } = client;
 
     const toolTableResp = await entities.tool.list();
+    toolTableData={};
     for(let i=0; i<toolTableResp.items.length;i++)
     {
         toolTableData[toolTableResp.items[i].serialNumber] = toolTableResp.items[i];
     }
 
     const motorTableResp = await entities.motor.list();
+    motorTableData={};
     for(let i=0; i<motorTableResp.items.length;i++)
     {
         motorTableData[motorTableResp.items[i].serialNumber] = motorTableResp.items[i];
     }
 
     const batteryTableResp = await entities.battery.list();
+    batteryTableData={};
     for(let i=0; i<batteryTableResp.items.length;i++)
     {
         batteryTableData[batteryTableResp.items[i].serialNumber] = batteryTableResp.items[i];
     }
 
     const seaShipmentTableResp = await entities.seaShipment.list();
+    seaShipmentTableData={};
     for(let i=0; i<seaShipmentTableResp.items.length;i++)
     {
         seaShipmentTableData[seaShipmentTableResp.items[i].trackingNumber] = seaShipmentTableResp.items[i];
     }
 
     const landShipmentTableResp = await entities.landShipment.list();
+    landShipmentTableData={};
     for(let i=0; i<landShipmentTableResp.items.length;i++)
     {
         landShipmentTableData[landShipmentTableResp.items[i].trackingNumber] = landShipmentTableResp.items[i];
     }
 
     const seaRouteTableResp = await entities.seaRoute.list();
+    seaRouteTableData={};
     for(let i=0; i<seaRouteTableResp.items.length;i++)
     {
         seaRouteTableData[seaRouteTableResp.items[i].routeID] = seaRouteTableResp.items[i];
     }
 
     const landRouteTableResp = await entities.landRoute.list();
+    landRouteTableData={};
     for(let i=0; i<landRouteTableResp.items.length;i++)
     {
         landRouteTableData[landRouteTableResp.items[i].routeID] = landRouteTableResp.items[i];
     }
+
+    tables = [
+      toolTableData,
+      motorTableData,
+      batteryTableData,
+      seaShipmentTableData,
+      landShipmentTableData,
+      seaRouteTableData,
+      landRouteTableData
+    ];
 }
 
-const tables = [
+var tables = [
   toolTableData,
   motorTableData,
   batteryTableData,
@@ -80,6 +97,11 @@ const tables = [
   seaRouteTableData,
   landRouteTableData
 ];
+
+export const deleteTool = async (_id_of_tool_record) => {
+  const { entities } = client;
+  const response = await entities.tool.remove(_id_of_tool_record);
+}
 
 export const addTool = async (_toolData) =>{
   const { entities } = client;

@@ -13,7 +13,7 @@ describe('HPT Dashbaord search by ID test', () => {
       cy.get('#wrongSerialNumber').should('not.exist')
     })
 
-    it('Press submit wihtout entering a serial number and expect to see helper text', () => {
+    it('Press "Find Tool" wihtout entering a serial number and expect to see helper text', () => {
       // make sure the page is loaded with 'valid' text field (in blue color)
       cy.get('#toolSerialNumInputTextField').invoke('attr','aria-invalid').should('eq', 'false')
       cy.get('#toolSerialNumInputSubmitButton').click()
@@ -23,7 +23,7 @@ describe('HPT Dashbaord search by ID test', () => {
       cy.get('#toolSerialNumInputTextField-helper-text').should('have.text','Serial number is required!')
     })
 
-    it('Press submit with a wrong serial number and expect a popup', () => {
+    it('Press "Find Tool" with a wrong serial number and expect a popup with error', () => {
       cy.get('#wrongSerialNumber').should('not.exist')
       cy.get('#toolSerialNumInputTextField').type("123")
       cy.get('#toolSerialNumInputSubmitButton').click()
@@ -32,7 +32,7 @@ describe('HPT Dashbaord search by ID test', () => {
       cy.get('#wrongSerialNumber').should('not.exist');
     })
 
-    it('Press submit with a valid serial number and expect a tool popup with image', () => {
+    it('Press "Find Tool" with a valid serial number and expect a tool popup with right tool image', () => {
       cy.get('#toolPopUp').should('not.exist')
       const ids = [
         ["HDB201301719", "HAMMERDRILL BULLDOG WITH SERIAL NUMBER HDB201301719"],

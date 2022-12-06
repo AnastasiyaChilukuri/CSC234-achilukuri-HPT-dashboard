@@ -9,7 +9,7 @@ describe('HPT Dashbaord Historical data page test', () => {
 
     })
 
-    it('Click on "Historical Data" tab and expect a Loging page to show up', () => {
+    it('Click on "Historical Data" tab and expect a Login page', () => {
         cy.get('#loginPageUserNameField').should('exist').should('be.visible')
         cy.get('#loginPagePasswordField').should('exist').should('be.visible')
         cy.get('#loginPageSignInButton').should('exist').should('be.visible')

@@ -38,7 +38,7 @@ describe('HPT Dashbaord View/Edit data page test', () => {
         cy.get('#wrongCredDialog button').wait(2000).click()
     })
 
-    it('Sign in with valid credentials and expect to see tables', () => {        
+    it('Sign in with valid credentials and expect to see tables', () => {
         cy.get('#loginPageUserNameField').type('sampleuser1@hpt.com')
         cy.get('#loginPagePasswordField').type('1234')
         cy.get('#loginPageSignInButton').click()
@@ -46,4 +46,66 @@ describe('HPT Dashbaord View/Edit data page test', () => {
         cy.get('#vendiaTable').should('exist').should('be.visible')
     }) 
  
+    it('Check Pagination',() =>{
+        cy.get('#loginPageUserNameField').type('sampleuser1@hpt.com')
+        cy.get('#loginPagePasswordField').type('1234')
+        cy.get('#loginPageSignInButton').click()
+        cy.get('#tableMenuBar').should('exist').should('be.visible')
+        cy.get('#vendiaTable').should('exist').should('be.visible')
+        cy.get('#toolTable').should('exist').should('be.visible')
+        cy.get('.MuiTablePagination-select').should('have.text','10')
+        cy.get('#toolTable > .MuiTableBody-root').find('.MuiTableRow-root').should('have.length',10)
+    })
+
+    it('Find an tool ID',() =>{
+        cy.get('#loginPageUserNameField').type('sampleuser1@hpt.com')
+        cy.get('#loginPagePasswordField').type('1234')
+        cy.get('#loginPageSignInButton').click()
+        cy.get('#tableMenuBar').should('exist').should('be.visible')
+        cy.get('#vendiaTable').should('exist').should('be.visible')
+        cy.get('#toolTable').should('exist').should('be.visible')
+        cy.get('.MuiTablePagination-select').should('have.text','10')
+        
+        var toolId = "HDB201307288";
+
+        const traveseTableAndFindID = (atempts) => {
+            if(atempts > 120) return;
+            var found = false;
+            cy.get('#toolTable > .MuiTableBody-root').find('.MuiTableRow-root').should('have.length',10)
+            cy.get('#toolTable > .MuiTableBody-root')
+            .find('.MuiTableRow-root')
+            .each(($row, $rindex) => {
+                cy.wrap($row).find('td').each(($col,$colindex) => {
+                    if($colindex == 0){
+                        cy.wrap($col)
+                        .invoke('text')
+                        .then(text => {
+                            cy.log(text.trim())
+                            if(text.trim() == toolId)
+                            { 
+                                found = true;
+                                return;
+                            }
+                        })
+                    }
+                })
+            }).then(()=>{
+                if(!found){
+                    cy.get(`[aria-label="Go to next page"]`).then(($btn) => {
+                        if ($btn.is(":disabled")) {
+                            return;
+                        }
+                    })
+                    cy.wait(1000)
+
+
+                    cy.get(`[aria-label="Go to next page"]`).click();
+
+                    traveseTableAndFindID(atempts+1);
+                }
+            })
+        }
+
+        traveseTableAndFindID(0);
+    })
 })

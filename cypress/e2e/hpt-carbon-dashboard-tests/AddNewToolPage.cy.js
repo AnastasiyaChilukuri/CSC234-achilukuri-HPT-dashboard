@@ -116,5 +116,72 @@ describe('HPT Dashbaord Add new tool page test', () => {
         cy.get('#failureDialog').should('exist').should('be.visible')
         cy.get('#failureDialog button').wait(2000).click()
     })
-   
+
+    it('Sign in with valid credentials and add new tool, and expect sucess dialog', () => {        
+        cy.get('#loginPageUserNameField').type('sampleuser1@hpt.com')
+        cy.get('#loginPagePasswordField').type('1234')
+        cy.get('#loginPageSignInButton').click()
+        cy.get('#addNewToolForm').should('exist').should('be.visible')
+        
+        cy.get('#addNewToolForm_ToolSerialNo').type('HDB202201719')
+        cy.get('#addNewToolForm_MotorSerialNo').type('HDBM202210647')
+        cy.get('#addNewToolForm_BatterySerialNo').type('HDBB202209680')
+        cy.get('#addNewToolForm_ToolTypeSelect').click()
+        cy.get(`[data-value="HammerDrill Bulldog"]`).click()
+        
+        cy.get('#sucessDialog').should('not.exist')
+        cy.get('#addNewToolForm_button').click()
+        cy.get('#sucessDialog').should('exist').should('be.visible')
+        cy.get('#sucessDialog button').wait(2000).click()        
+    })
+
+    it('Find and delete the newly added tool in the above test', () => { 
+        //delete the newly added tool
+        cy.get('#mainMenu button').contains("View/Edit Data").click()
+        cy.get('#loginPage').should('exist').should('be.visible')
+
+        cy.get('#loginPageUserNameField').type('sampleuser1@hpt.com')
+        cy.get('#loginPagePasswordField').type('1234')
+        cy.get('#loginPageSignInButton').click()
+        cy.get('#tableMenuBar').should('exist').should('be.visible')
+        cy.get('#vendiaTable').should('exist').should('be.visible')
+        cy.get('#toolTable').should('exist').should('be.visible')
+        cy.get('.MuiTablePagination-select').should('have.text','10')
+        //cy.get('tr').eq(1).find('td').eq(5).find('button').click()
+        
+        var toolId = "HDB202201719";
+        var found = false;
+        var rowToDelete;
+        async function traveseTableAndFindID () {
+            cy.get('tr > td').each(($sno) => {
+                cy.wrap($sno).invoke('text').then(text => {
+                    if(text.trim() == toolId)
+                    { 
+                        found = true;
+                        rowToDelete = $sno
+                    }
+                })
+            }).then(()=>{
+                if (found) {
+                    cy.wrap(rowToDelete).parent().find(`[aria-label="toolTableDeleteRow"]`).click()
+                    found = false;
+                    return;                    
+                }
+                else {
+                    cy.get(`[aria-label="Go to next page"]`).should('exist').then(($btn) => {
+                        if ($btn.is(":disabled")) {
+                            return;
+                        } else {
+                            cy.get(`[aria-label="Go to next page"]`).click({force:true});
+
+                            traveseTableAndFindID();
+                        }
+                    });
+                }
+            })
+            
+        }
+
+        traveseTableAndFindID()
+    })
 })

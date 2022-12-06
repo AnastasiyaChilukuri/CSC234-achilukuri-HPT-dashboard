@@ -11,6 +11,8 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TablePagination from '@mui/material/TablePagination';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Paper from "@mui/material/Paper";
 import { CircularProgress } from "@mui/material";
 import { UserContext } from "./UserContext";
@@ -18,18 +20,28 @@ import Login from "./Login";
 
 
 
-import { getDataFromVendia } from "./Backend.js";
+import { getDataFromVendia, deleteTool } from "./Backend.js";
 
 export default function ViewAndEditData() {
   const [value, setValue] = useState(-1);
   const [tableLoaded, setTableLoaded] = useState(false);
   const [tableHeaders, setTableHeaders] = useState([]);
+  const [tableRowIds, setTableRowIds] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [tablePage, setTablePage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
 
   const { userToken, setUserToken } = useContext(UserContext);
+  const tables = [
+    "toolTable",
+    "motorTable",
+    "batteryTable",
+    "seaShipmentTable",
+    "landShipmentTable",
+    "seaRouteTable",
+    "landRouteTable"
+  ];
 
   const listOfTableHeaders = [
     ["Serial Number", "Type", "Release Date", "Motor SNo.", "Battery SNo."],
@@ -60,23 +72,38 @@ export default function ViewAndEditData() {
   ];
 
   const loadTable = async (tableIndex) => {
+    setTablePage(0);
     setTableLoaded(false);
     const headers = listOfTableHeaders[tableIndex];
     setTableHeaders(headers);
     const table = await getDataFromVendia(tableIndex);
+    console.log(Object.keys(table).length);
     var data = [];
+    var rowIds = [];
     for (var serial in table) {
       var row = [];
       for (var x in table[serial]) {
         row.push(table[serial][x]);
       }
       data.push(row.slice(2, row.length));
+      rowIds.push(table[serial]['_id']);
     }
     //console.log(table);
     //const data = Array.from(table.keys());
-    console.log(data);
-    setTableData(data);
+    //console.log(data);
+    setTableRowIds(rowIds.reverse());
+    setTableData(data.reverse());
     setTableLoaded(true);
+  };
+
+  const handleDelete = async (index) => {
+    console.log(tableRowIds[rowsPerPage*tablePage+index]);
+    await deleteTool(tableRowIds[rowsPerPage*tablePage+index]);
+    var currentTableData = tableData.slice();
+    currentTableData.splice(rowsPerPage*tablePage+index, 1);
+    tableRowIds.splice(rowsPerPage*tablePage+index, 1);
+    setTableData(currentTableData);
+    setTableRowIds(tableRowIds);
   };
 
   const handleChange = (event, newValue) => {
@@ -130,7 +157,7 @@ export default function ViewAndEditData() {
     };
   }
 
-  function getTable() {
+  function getTable(enableDelete=false) {
     if(value == -1){
       handleChange(null, 0);
     }
@@ -145,8 +172,9 @@ export default function ViewAndEditData() {
           page={tablePage}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          id={tables[value]+"Pagination"}
         />}
-          <Table size="small" aria-label="simple table">
+          <Table size="small" aria-label="simple table" id={tables[value]}>
             <TableHead>
               <TableRow>
                 {tableHeaders.map((header) => (
@@ -160,6 +188,16 @@ export default function ViewAndEditData() {
                     {header}
                   </TableCell>
                 ))}
+                {enableDelete && (
+                <TableCell
+                    sx={{
+                      color: "white",
+                      backgroundColor: "rgba(25,118,210,1.0)",
+                      padding: 1,
+                    }}
+                  >
+                  </TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -173,11 +211,18 @@ export default function ViewAndEditData() {
               {tableLoaded &&
                 tableData
                 .slice(tablePage * rowsPerPage, tablePage * rowsPerPage + rowsPerPage)
-                .map((row) => (
+                .map((row, index) => (
                   <TableRow>
                     {row.map((val) => (
                       <TableCell>{val}</TableCell>
                     ))}
+                    {enableDelete && (
+                    <TableCell >
+                      <IconButton  aria-label={tables[value]+'DeleteRow'} onClick={()=>handleDelete(index)}>
+                          <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                    )}
                   </TableRow>
                 ))}
             </TableBody>
@@ -207,7 +252,7 @@ export default function ViewAndEditData() {
         <Tab label="LandRoute" {...a11yProps(6)} />
       </Tabs>
       <TabPanel value={value} index={0}>
-        {getTable()}
+        {getTable(userToken.role == "admin")}
       </TabPanel>
       <TabPanel value={value} index={1}>
         {getTable()}

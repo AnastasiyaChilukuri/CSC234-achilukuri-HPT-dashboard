@@ -23,6 +23,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PropTypes from "prop-types";
 import { createVendiaClient } from "@vendia/client";
 import { UserContext } from "./UserContext";
+import md5 from 'md5';
 
 async function loginUser(credentials) {
   return true;
@@ -69,7 +70,7 @@ export default function Login(props) {
         },
         _and: {
           encryptPswd: {
-            eq: credentials.password,
+            eq: md5(credentials.password),
           },
         },
       },
