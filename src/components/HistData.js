@@ -1,73 +1,259 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Login from "./Login";
+import { styled } from '@mui/material/styles';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import ImageListItemBar from "@mui/material/ImageListItemBar";
+import ListItemText from '@mui/material/ListItemText';
+
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    IconButton,
-    Card,
-    Container,
-    Backdrop,
-    Box,
-    CircularProgress
-  } from "@mui/material";
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  IconButton,
+  Card,
+  Container,
+  Backdrop,
+  Box,
+  CircularProgress,
+} from "@mui/material";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Chart } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import CloseIcon from "@mui/icons-material/Close";
+import {
+  getYearlyCo2EmissionOfToolType,
+  getAllToolPictures,
+} from "./Backend.js";
+import TableContainer from '@mui/material/TableContainer';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import { padding } from "@mui/system";
+import { UserContext } from "./UserContext";
 
-import { createVendiaClient } from "@vendia/client";
 
-const client = createVendiaClient({
-  apiUrl: `https://c3zxbm61ki.execute-api.us-west-2.amazonaws.com/graphql/`,
-  websocketUrl: `wss://9b6jfh1m81.execute-api.us-west-2.amazonaws.com/graphql`,
-  apiKey: "3426nYaSeCpMrUdhdgLqJLPbqJFrq6Vp2ANZnTxx9zJP",
-});
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 
 const HistData = () => {
+
+  const [token, setToken] = useState();
+
   const [user, setUser] = useState({ name: "", email: "" });
   const [error, setError] = useState("");
   const [toolPicturesLoaded, setToolPicturesLoaded] = useState(false);
   const [toolPictures, setToolPictures] = useState([]);
   const [openToolHistPopUp, setOpenToolHistPopUp] = useState(false);
   const [toolHistPopUpTitle, setToolHistPopUpTitle] = useState("");
+  const [toolHistPopUpImgUrl, setToolHistPopUpImgUrl] = useState("");
+  const {userToken, setUserToken} = useContext(UserContext);
+  const [graphOptions, setGraphOptions] = useState({});
+  const [graphData, setGraphData] = useState({});
+  const [graphLoaded, setGraphLoaded] = useState(false);
+  const [yearlyDataFromVendia, setYearlyDataFromVendia] = useState({});  
+  if(userToken.status == false) {
+    return (
+    <div>
+      <Login textMsg="see historical data"/>
+    </div>)
 
-  const handleCloseToolHistPopUp= () => {
+  }
+
+
+  const handleCloseToolHistPopUp = () => {
     setOpenToolHistPopUp(false);
+    setGraphLoaded(false);
   };
 
-  /*const handleOpenToolHistPopUp= () => {
-    setToolHistPopUpTitle();
+  const handleOpenToolHistPopUp = async (_toolType, toolTitle) => {
     setOpenToolHistPopUp(true);
-  };*/
 
-  const getAllToolPictures = async () => {
-    var _toolPictures = [];
-    const { entities, storage } = client;
-    const toolTypes = await entities.toolTypePic.list();
-    for (let i = 0; i < toolTypes.items.length; i++) {
-      var item = toolTypes.items[i];
-      const fileListResp = await storage.files.list({
-        filter: {
-          sourceKey: {
-            eq: item.toolPic,
-          },
+    const yearlyData = await getYearlyCo2EmissionOfToolType(_toolType);
+    const _graphOptions = {
+      scales: {
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Release year'
+          }
         },
-      });
-      //console.log(fileListResp);
-      if (fileListResp.items.length > 0) {
-        var _toolPicturesItem = {};
-        _toolPicturesItem.img = fileListResp.items[0].temporaryUrl;
-        _toolPicturesItem.title = item.toolType.toUpperCase();
-        _toolPicturesItem.type = item.toolType;
-        _toolPictures.push(_toolPicturesItem);
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Co2 Emmission'
+          },
+          ticks: {
+                // Include a dollar sign in the ticks
+                callback: function(value, index, ticks) {
+                    return value + ' ppm';
+                }
+            }
+        }
+      },
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "Yearly AVG co2 emission for " + toolTitle,
+        },
       }
+    };
+    var _yearlyDataFromVendia = [];
+    var year_lables = [];
+    var year_avgs = [];
+    for (const year in yearlyData) {
+      year_lables.push(year);
+      year_avgs.push(yearlyData[year]);
+      _yearlyDataFromVendia.push({"year":year, "avg":parseFloat(yearlyData[year]).toFixed(2)});
     }
+    const _graphData = {
+      labels: year_lables,
+      datasets: [
+        {
+          label: "Yearly Avg",
+          data: year_avgs,
+          fill: false,
+          borderColor: "rgb(25,118,210)",
+          tension: 0.1,
+        },
+      ],
+    };
+    setGraphOptions(_graphOptions);
+    setGraphData(_graphData);
+    setYearlyDataFromVendia(_yearlyDataFromVendia);
+    setGraphLoaded(true);
+  };
+
+  const getAllToolPicturesFromBacked = async () => {
+    const _toolPictures = await getAllToolPictures();
     console.log(_toolPictures);
     setToolPictures(_toolPictures);
     setToolPicturesLoaded(true);
   };
+
+  function tableWithYearlyAvg(){
+    return(
+      <TableContainer component={Paper}>
+      <Table id='dialogPopupWithHistGraphAndTable_Table' aria-label="simple table">
+    <TableHead>
+      <TableRow>
+        <TableCell sx={{ color: "white", backgroundColor: "rgba(25,118,210,1.0)", padding:1}} >Release Year</TableCell>
+        <TableCell sx={{ color: "white", backgroundColor: "rgba(25,118,210,1.0)", padding:1}} align="right">Avg. Co2 Emitted</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {yearlyDataFromVendia.map((row) => (
+        <TableRow
+          key={row.year}
+          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+        >
+          <TableCell component="th" scope="row" sx={{ padding: 1 }}>
+            {row.year}
+          </TableCell>
+          <TableCell align="right" sx={{ padding: 1 }}>{row.avg}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table></TableContainer>)
+  }
+
+  function dialogPopupWithGraphAndTable() {
+    return(
+      <Dialog
+            open={openToolHistPopUp}
+            onClose={handleCloseToolHistPopUp}
+            aria-label="dialog-title"
+            aria-describedby="dialog-description"
+            PaperProps={{ sx: { backgroundColor: "default" } }}
+            fullWidth
+            maxWidth="lg"
+            id='dialogPopupWithHistGraphAndTable'
+          >
+            <DialogTitle id="dialog-title" align="center" sx={{ color: "white", backgroundColor: "rgba(25,118,210,1.0)", padding:1}}>
+              <Box display="flex" alignItems="center">
+                <Box flexGrow={1}>
+                <ListItemText
+                  id='dialogPopupWithHistGraphAndTableHeader'
+                  primary={`Historical data for ${toolHistPopUpTitle}`}
+                  primaryTypographyProps={{
+                    fontSize: 30,
+                    fontWeight: 'medium',
+                    lineHeight: '40 px',
+                    mb: '2px',
+                  }}/>
+
+                </Box>
+                <Box>
+                  <IconButton onClick={handleCloseToolHistPopUp}>
+                    <CloseIcon sx={{ color: "white"}}/>
+                  </IconButton>
+                </Box>
+              </Box>
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="dialog-description">
+              <Grid container spacing={2} padding={2}>
+                <Grid item xs={12} align="center" justifyContent="center" >
+                <img
+                      id='dialogPopupWithHistGraphAndTableImage'
+                      src={`${toolHistPopUpImgUrl}&w=25&fit=crop&auto=format`}
+                      srcSet={`${toolHistPopUpImgUrl}&w=25&fit=crop&auto=format&dpr=2 3x`}
+                      alt={toolHistPopUpTitle}
+                      loading="lazy"
+                    />
+                </Grid>
+                <Grid item xs={8}>
+                  {graphLoaded && (
+                  <Line id='dialogPopupWithHistGraphAndTable_Graph' options={graphOptions} data={graphData} />
+                )}
+                </Grid>
+                <Grid item xs={4}>
+                  {graphLoaded && tableWithYearlyAvg()}
+                </Grid>
+                <Grid item xs={12} align="center" justifyContent="center" >
+                {!graphLoaded && <CircularProgress />}
+                </Grid>
+                </Grid>
+
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+    );
+  }
 
   function displayToolPictureGrid() {
     return (
@@ -81,6 +267,7 @@ const HistData = () => {
               <CircularProgress color="inherit" />
             </Backdrop>
             <ImageList
+              id='toolPicGrid' 
               gap={12}
               sx={{
                 mb: 8,
@@ -90,24 +277,30 @@ const HistData = () => {
             >
               {toolPictures.map((tool) => (
                 <Card key={tool.title}>
-                  <ImageListItem sx={{ height: "100% !important" }}>
+                  <ImageListItem
+                   sx={{ height: "100% !important" }}
+                   id={tool.type+"GridItem"}
+                  >
                     <ImageListItemBar
                       sx={{
                         background:
                           "linear-gradient(to bottom, rgba(25,118,210,1.0)0%, rgba(25,118,210,0.3)70%, rgba(0,0,0,0)100%)",
                       }}
                       title={tool.title}
+                      id={tool.type+"GridItemHeader"}
                       position="top"
                     />
                     <img
-                      src={`${tool.img}&w=200&fit=crop&auto=format`}
-                      srcSet={`${tool.img}&w=200&fit=crop&auto=format&dpr=2 2x`}
+                      src={`${tool.img}&w=100&fit=crop&auto=format`}
+                      srcSet={`${tool.img}&w=100&fit=crop&auto=format&dpr=2 4x`}
                       alt={tool.title}
                       loading="lazy"
                       style={{ cursor: "pointer" }}
+                      id={tool.type+"GridItemImage"}
                       onClick={() => {
-                        setToolHistPopUpTitle(tool.type);
-                        setOpenToolHistPopUp(true);
+                        setToolHistPopUpTitle(tool.title);
+                        setToolHistPopUpImgUrl(tool.img);
+                        handleOpenToolHistPopUp(tool.type, tool.title);
                       }}
                     />
                   </ImageListItem>
@@ -117,65 +310,15 @@ const HistData = () => {
           </Container>
         </div>
         <div id="Dialog">
-          <Dialog
-            open={openToolHistPopUp}
-            onClose={handleCloseToolHistPopUp}
-            aria-label="dialog-title"
-          aria-describedby="dialog-description"
-          PaperProps={{ sx: { backgroundColor: "default" } }}
-        >
-            <DialogTitle id="dialog-title">
-              <Box display="flex" alignItems="center">
-                <Box flexGrow={1}>{toolHistPopUpTitle}</Box>
-                <Box>
-                  <IconButton onClick={handleCloseToolHistPopUp}>
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-              </Box>
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="dialog-description">
-                Historical data for tool
-              </DialogContentText>
-            </DialogContent>
-          </Dialog>
+        {dialogPopupWithGraphAndTable()}
         </div>
       </div>
     );
   }
 
-  /*function displayToolPictureGrid(){
-        return (<div>
-            <Backdrop
-              sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-              open={!toolPicturesLoaded}
-            >
-              <CircularProgress color="inherit" />
-            </Backdrop>
-            <ImageList sx={{ width: 750, height: 600 }}>
-                {toolPictures.map((item) => (
-                    <ImageListItem key={item.img}>
-                        <img
-                        src={`${item.img}&w=248&fit=crop&auto=format`}
-                        srcSet={`${item.img}&w=248&fit=crop&auto=format&dpr=2 2x`}
-                        alt={item.title}
-                        loading="lazy"
-                        />
-                    </ImageListItem>
-                ))}
-                </ImageList>
+  if (!toolPicturesLoaded) getAllToolPicturesFromBacked();
 
-     </div>);
-    }*/
-
-  if (!toolPicturesLoaded) getAllToolPictures();
-
-  return (
-    <div className="App">
-      {displayToolPictureGrid()}
-    </div>
-  );
+  return <div className="App">{displayToolPictureGrid()}</div>;
 };
 
 export default HistData;

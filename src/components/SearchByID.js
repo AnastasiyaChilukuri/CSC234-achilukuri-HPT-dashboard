@@ -20,13 +20,8 @@ import {
   CircularProgress
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { createVendiaClient } from "@vendia/client";
 
-const client = createVendiaClient({
-  apiUrl: `https://c3zxbm61ki.execute-api.us-west-2.amazonaws.com/graphql/`,
-  websocketUrl: `wss://9b6jfh1m81.execute-api.us-west-2.amazonaws.com/graphql`,
-  apiKey: "3426nYaSeCpMrUdhdgLqJLPbqJFrq6Vp2ANZnTxx9zJP",
-});
+import {getCo2DataOfToolBySerialNo} from "./Backend.js"
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -69,6 +64,8 @@ export default function SearchByID() {
   });
   const [serialNum, setSerialNum] = useState("");
   const [toolType, setToolType] = useState("");
+  const [serialnumError, setSerialnumError] = useState("");
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -84,159 +81,35 @@ export default function SearchByID() {
 
   function handleClickOpen(props) {
     //here you need to determine to open wrong dialogue or the correct dialouge
+    if(serialNum===""){
+      setSerialnumError("Serial number is required!");
+      return;
+    }
     setLoadingOpen(true);
-    getCo2DataOfToolBySerialNo(serialNum);
+    co2DataOfToolBySerialNo(serialNum.trim());
   }
 
   const handleCloseToolPopUp= () => {
     setOpenToolPopUp(false);
   };
 
-  const getCo2DataOfShippmentByID = async (_shipmentID, shipmentType) => {
-    var shipmentCo2 = 0;
-    const { entities } = client;
-    const shipmentTable = shipmentType == "sea" ? entities.seaShipment : entities.landShipment;
-    const shipmentTableResp = await shipmentTable.list({
-      filter: {
-        trackingNumber: {
-          eq: _shipmentID,
-        },
-      },
-    });
-    if(shipmentTableResp.items.length > 0){
-      var _routeId = shipmentType == "sea" ? shipmentTableResp.items[0].seaRouteID : shipmentTableResp.items[0].landRouteID;
-      var routeTableResp;
-      if(shipmentType == "sea"){
-        routeTableResp = await entities.seaRoute.list({
-          filter: {
-            routeID: {
-              eq: _routeId,
-            },
-          },
-        });
-
-      }
-      else{
-        routeTableResp = await entities.landRoute.list({
-          filter: {
-            routeID: {
-              eq: _routeId,
-            },
-          },
-        });
-      }
-      if(routeTableResp.items.length > 0){
-        shipmentCo2 = routeTableResp.items[0].co2;
-      }
-    }
-    return shipmentCo2;
-  }
-
-  const getCo2DataOfBatteryBySerialNo = async (serialNo) => {
-    var co2Return = {bateryCo2 : 0, transportationCo2 : 0};
-
-    const { entities } = client;
-    const batteryTableResp = await entities.battery.list({
-      filter: {
-        serialNumber: {
-          eq: serialNo,
-        },
-      },
-    });
-    if(batteryTableResp.items.length > 0){
-      const shipmentType = batteryTableResp.items[0].shipmentType;
-      const shipmentID = batteryTableResp.items[0].shipmentID;
-      co2Return.bateryCo2 = batteryTableResp.items[0].co2;
-      co2Return.transportationCo2 = await getCo2DataOfShippmentByID(shipmentID, shipmentType);
-    }
-    return co2Return;
-  }
-
-  const getCo2DataOfMotorBySerialNo = async (serialNo) => {
-    var co2Return = {motorCo2 : 0, transportationCo2 : 0};
-    const { entities } = client;
-    const motorTableResp = await entities.motor.list({
-      filter: {
-        serialNumber: {
-          eq: serialNo,
-        },
-      },
-    });
-    if(motorTableResp.items.length > 0){
-      const shipmentType = motorTableResp.items[0].shipmentType;
-      const shipmentID = motorTableResp.items[0].shipmentID;
-      co2Return.motorCo2 = motorTableResp.items[0].co2;
-      co2Return.transportationCo2 = await getCo2DataOfShippmentByID(shipmentID, shipmentType);
-    }
-    return co2Return;
-  }
-
-  const getToolImageUrl = async (_toolType) =>{
-    var imageUrl = "";
-    const { entities , storage} = client;
-    const toolTypeTableResp = await entities.toolTypePic.list({
-      filter: {
-        toolType: {
-          eq: _toolType,
-        },
-      },
-    });
-
-    if (toolTypeTableResp.items.length > 0){
-      const fileListResp = await storage.files.list({
-        filter: {
-          sourceKey: {
-            eq: toolTypeTableResp.items[0].toolPic,
-          },
-        },
-      });
-      if(fileListResp.items.length > 0) {
-        imageUrl = fileListResp.items[0].temporaryUrl;
-      }
-    }
-
-    return imageUrl;
-  }
-
-  const getCo2DataOfToolBySerialNo = async (serialNo) => {
-    var _toolCo2Data = {imageUrl : "",
-    motor: 0,
-    batery: 0,
-    transportation: 0};
-    const { entities } = client;
-    const toolTableResp = await entities.tool.list({
-      filter: {
-        serialNumber: {
-          eq: serialNo,
-        },
-      },
-    });
-
-    if(toolTableResp.items.length > 0){
-      const motorSN = toolTableResp.items[0].motorSN;
-      const baterySN = toolTableResp.items[0].batterySN;
-      const toolType = toolTableResp.items[0].toolType;
-      const motorCo2Return = await getCo2DataOfMotorBySerialNo(motorSN);
-      const batteryCo2Return = await getCo2DataOfBatteryBySerialNo(baterySN);
-      const imageUrl = await getToolImageUrl(toolType);
-      _toolCo2Data.imageUrl = imageUrl;
-      _toolCo2Data.motor = motorCo2Return.motorCo2;
-      _toolCo2Data.batery = batteryCo2Return.bateryCo2;
-      _toolCo2Data.transportation = (parseFloat(motorCo2Return.transportationCo2) + parseFloat(batteryCo2Return.transportationCo2)).toFixed(3);
-      _toolCo2Data.transportation = parseFloat(_toolCo2Data.transportation);
+  const co2DataOfToolBySerialNo = async (serialNo) => {
+    const _toolCo2Data = await getCo2DataOfToolBySerialNo(serialNo);
+    if(_toolCo2Data.sucess){
       setToolCo2Values(_toolCo2Data);
-      setToolType(toolType);
+      setToolType(_toolCo2Data.type);
     }
-//    console.log(this.state.toolCo2Values);
+
     setOpenToolPopUp(true);
-    setToolSerialFound(toolTableResp.items.length > 0);
+    setToolSerialFound(_toolCo2Data.sucess);
     setLoadingOpen(false);
-  };
+  }
 
   function DialogWrongSN() {
     return (
       <div>
         <Dialog
+          id="wrongSerialNumber"
           open={openToolPopUp && !toolSerialFound}
           onClose={handleCloseToolPopUp}
           aria-label="dialog-title"
@@ -270,13 +143,14 @@ export default function SearchByID() {
     return (
       <div>
         <Dialog
+          id="toolPopUp"
           open={openToolPopUp && toolSerialFound}
           onClose={handleCloseToolPopUp}
           aria-label="dialog-title"
           aria-describedby="dialog-description"
           PaperProps={{ sx: { backgroundColor: "default" } }}
         >
-          <DialogTitle id="dialog-title" align="center">
+          <DialogTitle id="dialog-title" align="center" sx={{ color: "white", backgroundColor: "rgba(25,118,210,1.0)", padding:1}}>
             <Box display="flex" alignItems="center">
               <Box flexGrow={1}>
               <ListItemText
@@ -293,20 +167,21 @@ export default function SearchByID() {
                     fontSize: 15,
                     variant: 'button',
                     lineHeight: '25px',
+                    color : "white"
                   }}
-                  sx={{ my: 0 }}
+                  sx={{ color: "white"}}
                 />
               </Box>
               <Box>
                 <IconButton onClick={handleCloseToolPopUp}>
-                  <CloseIcon />
+                  <CloseIcon sx={{ color: "white"}}/>
                 </IconButton>
               </Box>
             </Box>
           </DialogTitle>
           <DialogContent align="center">
             <Box sx={{ width: 1, height: 1 }} p={2} textAlign="center">
-              <img src={toolCo2Values.imageUrl} width="60%" alt="bag photos" />
+              <img id="toolPopUpImg" src={toolCo2Values.imageUrl} width="60%" alt="Tool photo" />
               <Box>
                 <Box
                   display="grid"
@@ -376,14 +251,19 @@ export default function SearchByID() {
               margin="normal"
               required
               fullWidth
-              id="text"
+              id="toolSerialNumInputTextField"
               label="Tool Serial Number"
               name="text"
               autoFocus
               onChange={handleSerialNumChange}
+              error= {(serialnumError!=="")}
+              helperText={(serialnumError==="")?"":serialnumError}
+              disabled={loadingOpen}
+
             />
             <Button
               onClick={() => handleClickOpen()}
+              id="toolSerialNumInputSubmitButton"
               type="submit"
               fullWidth
               variant="contained"
